@@ -1,7 +1,7 @@
 // app.js — Gmail Cleaner Dashboard
 // ─────────────────────────────────────────────────────────────
 // UPDATE THIS LINE with your Railway URL before deploying:
-const API_BASE = 'https://YOUR_RAILWAY_URL';
+const API_BASE = 'https://gmail-cleaner-backend-production.up.railway.app';
 // ─────────────────────────────────────────────────────────────
 
 // ============================================
