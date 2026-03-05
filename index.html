@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gmail Cleaner — Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <!-- Corner decorations -->
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-mark">GC</div>
+      <div class="header-title">
+        <span class="title-main">GMAIL CLEANER</span>
+        <span class="title-sub">MISSION CONTROL // v3.0</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-dot" id="authDot"></div>
+      <span class="status-label" id="authLabel">CHECKING...</span>
+      <div class="time-display" id="clock"></div>
+    </div>
+  </header>
+
+  <!-- Config banner (shown when API URL not set) -->
+  <div class="config-banner" id="configBanner">
+    ⚙️ &nbsp;Set your Railway API URL: open <code>app.js</code> and update <code>API_BASE</code> on line 1
+  </div>
+
+  <!-- Main grid -->
+  <main class="main-grid">
+
+    <!-- LEFT COLUMN -->
+    <div class="left-col">
+
+      <!-- Stats row -->
+      <section class="stats-row">
+        <div class="stat-card" data-delay="0">
+          <div class="stat-value" id="statTrashed">—</div>
+          <div class="stat-label">TRASHED TODAY</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="barTrashed"></div></div>
+        </div>
+        <div class="stat-card" data-delay="1">
+          <div class="stat-value" id="statFreed">—</div>
+          <div class="stat-label">STORAGE FREED</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="barFreed"></div></div>
+        </div>
+        <div class="stat-card" data-delay="2">
+          <div class="stat-value" id="statUnsubs">—</div>
+          <div class="stat-label">UNSUBSCRIBED</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="barUnsubs"></div></div>
+        </div>
+        <div class="stat-card" data-delay="3">
+          <div class="stat-value" id="statRuns">—</div>
+          <div class="stat-label">TOTAL RUNS</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="barRuns"></div></div>
+        </div>
+      </section>
+
+      <!-- Manual Controls -->
+      <section class="panel" data-delay="4">
+        <div class="panel-header">
+          <span class="panel-title">// MANUAL CONTROLS</span>
+          <span class="panel-hint">configure then fire</span>
+        </div>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label class="ctrl-label">CATEGORIES</label>
+            <div class="checkbox-row">
+              <label class="cb-item"><input type="checkbox" value="promotions" checked /> Promotions</label>
+              <label class="cb-item"><input type="checkbox" value="social" checked /> Social</label>
+              <label class="cb-item"><input type="checkbox" value="updates" /> Updates</label>
+              <label class="cb-item"><input type="checkbox" value="forums" /> Forums</label>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="ctrl-label">OLDER THAN (DAYS)</label>
+            <div class="range-row">
+              <input type="range" id="daysRange" min="30" max="730" value="365" step="30" />
+              <span class="range-val" id="daysVal">365</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="ctrl-label">OPTIONS</label>
+            <div class="checkbox-row">
+              <label class="cb-item"><input type="checkbox" id="chkUnsub" checked /> Auto-unsubscribe</label>
+            </div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-ghost" id="btnPreview">👁 PREVIEW</button>
+          <button class="btn btn-primary" id="btnClean">▶ RUN CLEAN</button>
+        </div>
+        <div class="preview-result" id="previewResult"></div>
+      </section>
+
+      <!-- Run History -->
+      <section class="panel" data-delay="5">
+        <div class="panel-header">
+          <span class="panel-title">// RUN HISTORY</span>
+          <button class="panel-action" id="btnRefresh">↻ REFRESH</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="history-empty">No runs yet. Hit RUN CLEAN to start.</div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+      <!-- Last Run Detail -->
+      <section class="panel" data-delay="4">
+        <div class="panel-header">
+          <span class="panel-title">// LAST RUN DETAIL</span>
+          <span class="panel-hint" id="lastRunTime">—</span>
+        </div>
+        <div id="lastRunDetail" class="last-run-detail">
+          <div class="detail-empty">No run data yet</div>
+        </div>
+      </section>
+
+      <!-- Activity Log -->
+      <section class="panel log-panel" data-delay="5">
+        <div class="panel-header">
+          <span class="panel-title">// ACTIVITY LOG</span>
+          <button class="panel-action" id="btnClearLog">CLEAR</button>
+        </div>
+        <div class="log-body" id="logBody"></div>
+      </section>
+
+      <!-- Schedule -->
+      <section class="panel" data-delay="6">
+        <div class="panel-header">
+          <span class="panel-title">// SCHEDULE</span>
+        </div>
+        <div class="schedule-list">
+          <div class="schedule-item">
+            <div class="sched-dot sched-active"></div>
+            <div class="sched-info">
+              <div class="sched-name">Nightly Full Clean</div>
+              <div class="sched-time">2:00 AM UTC · Daily</div>
+            </div>
+            <div class="sched-next" id="schedNext1">—</div>
+          </div>
+          <div class="schedule-item">
+            <div class="sched-dot sched-active"></div>
+            <div class="sched-info">
+              <div class="sched-name">Weekly Deep Clean</div>
+              <div class="sched-time">3:00 AM UTC · Sundays</div>
+            </div>
+            <div class="sched-next" id="schedNext2">—</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Running overlay -->
+  <div class="run-overlay" id="runOverlay">
+    <div class="run-modal">
+      <div class="run-spinner"></div>
+      <div class="run-title">CLEAN IN PROGRESS</div>
+      <div class="run-sub" id="runStatus">Connecting to Gmail...</div>
+      <div class="run-progress">
+        <div class="run-progress-fill" id="runProgress"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
