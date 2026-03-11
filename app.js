@@ -407,6 +407,95 @@ document.getElementById('btnClearLog').addEventListener('click', () => {
 // INIT
 // ============================================
 
+// ============================================
+// ACCOUNT SWITCHER
+// ============================================
+
+let accountMenuOpen = false;
+
+function toggleAccountMenu() {
+  accountMenuOpen = !accountMenuOpen;
+  const switcher = document.getElementById('accountSwitcher');
+  switcher.classList.toggle('open', accountMenuOpen);
+  if (accountMenuOpen) loadAccounts();
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('accountSwitcher').contains(e.target)) {
+    accountMenuOpen = false;
+    document.getElementById('accountSwitcher').classList.remove('open');
+  }
+});
+
+async function loadAccounts() {
+  const list = document.getElementById('accountMenuList');
+  try {
+    const data = await apiFetch('/auth/accounts');
+    const accounts = data.accounts || [];
+
+    if (accounts.length === 0) {
+      list.innerHTML = '<div class="account-menu-loading">No accounts configured.<br/>Add GOOGLE_REFRESH_TOKEN_1 to Railway.</div>';
+      document.getElementById('accountActiveLabel').textContent = 'No accounts';
+      return;
+    }
+
+    // Update header label
+    const active = accounts.find(a => a.active);
+    if (active) document.getElementById('accountActiveLabel').textContent = active.label;
+
+    list.innerHTML = accounts.map(a => `
+      <div class="account-item ${a.active ? 'active' : ''}" onclick="switchAccount('${a.id}', '${a.label}')">
+        <div class="account-item-dot"></div>
+        <div class="account-item-info">
+          <div class="account-item-label">${a.label}</div>
+          <div class="account-item-id">Account ${a.id}</div>
+        </div>
+        ${a.active ? '<span class="account-item-badge">ACTIVE</span>' : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    list.innerHTML = `<div class="account-menu-loading">Error: ${err.message}</div>`;
+  }
+}
+
+async function switchAccount(accountId, label) {
+  if (document.getElementById('accountActiveLabel').textContent === label) {
+    // Already active, just close
+    toggleAccountMenu();
+    return;
+  }
+
+  const list = document.getElementById('accountMenuList');
+  list.innerHTML = '<div class="account-menu-loading">Switching...</div>';
+  log(`Switching to ${label}...`, 'info');
+
+  try {
+    await apiFetch('/auth/switch', 'POST', { accountId });
+    document.getElementById('accountActiveLabel').textContent = label;
+    log(`✓ Switched to ${label}`, 'success');
+    toggleAccountMenu();
+    // Refresh stats for new account
+    await Promise.all([loadHistory(), loadLastRun()]);
+  } catch (err) {
+    log(`Switch failed: ${err.message}`, 'error');
+    list.innerHTML = `<div class="account-menu-loading">Error: ${err.message}</div>`;
+  }
+}
+
+async function initAccountSwitcher() {
+  try {
+    const data = await apiFetch('/auth/accounts');
+    const active = (data.accounts || []).find(a => a.active);
+    if (active) document.getElementById('accountActiveLabel').textContent = active.label;
+    else if (data.accounts && data.accounts.length > 0) {
+      document.getElementById('accountActiveLabel').textContent = data.accounts[0].label;
+    }
+  } catch {
+    document.getElementById('accountActiveLabel').textContent = 'Account 1';
+  }
+}
+
 async function init() {
   log('Dashboard initializing...', 'info');
   updateClock();
@@ -415,6 +504,7 @@ async function init() {
   setInterval(updateSchedule, 60000);
 
   await checkAuth();
+  await initAccountSwitcher();
   await Promise.all([loadHistory(), loadLastRun()]);
   log('Dashboard ready', 'success');
 }

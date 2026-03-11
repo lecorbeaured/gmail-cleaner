@@ -29,6 +29,20 @@
       </div>
     </div>
     <div class="header-right">
+      <div class="account-switcher" id="accountSwitcher">
+        <div class="account-trigger" id="accountTrigger" onclick="toggleAccountMenu()">
+          <span class="account-icon">📧</span>
+          <span class="account-active-label" id="accountActiveLabel">—</span>
+          <span class="account-chevron" id="accountChevron">▾</span>
+        </div>
+        <div class="account-menu" id="accountMenu">
+          <div class="account-menu-header">SWITCH ACCOUNT</div>
+          <div class="account-menu-list" id="accountMenuList">
+            <div class="account-menu-loading">Loading...</div>
+          </div>
+        </div>
+      </div>
+      <div class="header-divider"></div>
       <div class="status-dot" id="authDot"></div>
       <span class="status-label" id="authLabel">CHECKING...</span>
       <div class="time-display" id="clock"></div>
